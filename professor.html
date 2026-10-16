@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة المحاضرة - تسجيل الحضور الذكي</title>
+    <!-- مكتبة إنشاء QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background-color: #1e293b;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+
+        .qr-container {
+            background-color: #ffffff;
+            padding: 16px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 15px 0;
+        }
+
+        .timer-box {
+            margin: 15px 0;
+            font-size: 1rem;
+            color: #cbd5e1;
+        }
+
+        .timer-countdown {
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .students-section {
+            margin-top: 25px;
+            text-align: right;
+            border-top: 1px solid #334155;
+            padding-top: 15px;
+        }
+
+        .students-title {
+            color: #22c55e;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #studentsList {
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .btn-end {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #dc2626;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-end:hover {
+            background-color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <h1>قاعة المحاضرات - د/ محمد سيد</h1>
+        <h2>مادة: هندسة البرمجيات (الفرقة الثانية)</h2>
+
+        <!-- مربع الـ QR -->
+        <div class="qr-container">
+            <div id="qrcode"></div>
+        </div>
+
+        <!-- عداد الوقت -->
+        <div class="timer-box">
+            تحديث كود الحضور خلال: <span class="timer-countdown" id="countdown">120</span> ثانية
+        </div>
+
+        <!-- قائمة الحاضرين -->
+        <div class="students-section">
+            <div class="students-title">الطلاب الحاضرون الآن:</div>
+            <ul id="studentsList" style="list-style: none; color: #94a3b8;">
+                <li>في انتظار تسجيل الطلاب...</li>
+            </ul>
+        </div>
+
+        <a href="index.html" class="btn-end" onclick="localStorage.removeItem('currentLectureToken')">إنهاء الجلسة وتفريغ غياب</a>
+    </div>
+
+    <script>
+        // 1. دالة إنشاء توكن عشوائي
+        function generateRandomCode() {
+            return "ATTENDANCE_TOKEN_" + Math.random().toString(36).substring(2, 9);
+        }
+
+        const qrContainer = document.getElementById("qrcode");
+        let currentToken = generateRandomCode();
+
+        // حفظ الكود الحالي في الذاكرة المحلية
+        localStorage.setItem('currentLectureToken', currentToken);
+
+        // إنشاء رابط مباشر لصفحة الطالب يحتوي على الكود (ليفتحه الموبايل فوراً عند التصوير)
+        let studentUrl = `https://aaboashraf2007-lgtm.github.io/Smart-attendance/student.html?token=${currentToken}`;
+
+        // 2. إنشاء الباركود بالأبعاد المظبوطة والرابط المباشر
+        let qrCodeInstance = new QRCode(qrContainer, {
+            text: studentUrl,
+            width: 180,
+            height: 180,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // 3. ضبط العداد الزمني لـ 120 ثانية (دقيقتين)
+        let timeLeft = 120;
+        const countdownEl = document.getElementById('countdown');
+
+        setInterval(() => {
+            timeLeft--;
+
+            if (countdownEl) {
+                countdownEl.textContent = timeLeft < 10 ? '0' + timeLeft : timeLeft;
+            }
+
+            // عند انتهاء الـ 120 ثانية، يتم تجديد الباركود والعداد على 120 ثانية مجدداً
+            if (timeLeft <= 0) {
+                timeLeft = 120; // العودة لدقيقتين
+                qrContainer.innerHTML = ""; // مسح الباركود القديم
+
+                currentToken = generateRandomCode();
+                localStorage.setItem('currentLectureToken', currentToken);
+
+                studentUrl = `https://aaboashraf2007-lgtm.github.io/Smart-attendance/student.html?token=${currentToken}`;
+
+                new QRCode(qrContainer, {
+                    text: studentUrl,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
