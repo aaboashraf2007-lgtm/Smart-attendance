@@ -101,20 +101,14 @@
 
     <script>
         let timeLeft = 60;
-        let qrCodeInstance = null;
 
         function generateQRCode() {
-            // توليد توكن عشوائي يتغير كل فترة
-            const randomToken = "ATTENDANCE_TOKEN_" + Math.random().toString(36.substring(2)) + "_" + Date.now();
-            
-            // رابط صفحة الطالب مع التوكن الجديد
+            const randomToken = "ATTENDANCE_TOKEN_" + Math.random().toString(36).substring(2) + "_" + Date.now();
             const studentUrl = window.location.href.replace("professor.html", "student.html") + "?token=" + randomToken;
 
-            // مسح الكود القديم لو موجود
             document.getElementById("qrcode").innerHTML = "";
 
-            // إنشاء الباركود الجديد
-            qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
+            new QRCode(document.getElementById("qrcode"), {
                 text: studentUrl,
                 width: 220,
                 height: 220,
@@ -124,19 +118,17 @@
             });
         }
 
-        // عداد التحديث التلقائي للباركود
         function startTimer() {
             setInterval(() => {
                 timeLeft--;
                 document.getElementById("timer").innerText = timeLeft;
                 if (timeLeft <= 0) {
                     timeLeft = 60;
-                    generateQRCode(); // تحديث الباركود تلقائياً بعد انتهاء الوقت
+                    generateQRCode();
                 }
             }, 1000);
         }
 
-        // تشغيل الوظائف عند فتح الصفحة
         generateQRCode();
         startTimer();
     </script>
