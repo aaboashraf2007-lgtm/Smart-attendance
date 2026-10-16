@@ -136,13 +136,11 @@
         let isQrValid = false;
         let isGpsValid = false;
 
-        // تشغيل الكاميرا الأمامية/الخلفية لقراءة الـ QR الفعلي فقط
         const html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 220, height: 220 } },
             (decodedText) => {
-                // الكود ده بيتنفذ أول ما الكاميرا تلقط وتصور البาร์كود بنجاح
                 isQrValid = true;
                 document.getElementById('qrStatus').innerText = "تم القراءة بنجاح ✅";
                 document.getElementById('qrStatus').style.color = "#22c55e";
@@ -152,15 +150,12 @@
                     html5QrCode.stop();
                 } catch (e) {}
             },
-            (errorMessage) => {
-                // بيتجاهل أخطاء الإطار الحالية لحد ما يلقط الباركود
-            }
+            (errorMessage) => {}
         ).catch(err => {
             document.getElementById('qrStatus').innerText = "تعذر فتح الكاميرا ❌";
             document.getElementById('qrStatus').style.color = "#ef4444";
         });
 
-        // التحقق من موقع الـ GPS
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
