@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الحضور - الطالب</title>
-    <!-- مكتبة قراءة الـ QR بواسطة الكاميرا -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * {
@@ -13,7 +12,6 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         body {
             background-color: #0f172a;
             color: #f8fafc;
@@ -23,7 +21,6 @@
             min-height: 100vh;
             padding: 20px;
         }
-
         .card {
             background-color: #1e293b;
             border-radius: 16px;
@@ -33,20 +30,17 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
-
         h1 {
             font-size: 1.4rem;
             color: #38bdf8;
             margin-bottom: 10px;
         }
-
         p.desc {
             color: #94a3b8;
             font-size: 0.9rem;
             margin-bottom: 20px;
             line-height: 1.5;
         }
-
         input[type="text"] {
             width: 100%;
             padding: 12px 15px;
@@ -59,11 +53,9 @@
             outline: none;
             text-align: center;
         }
-
         input[type="text"]:focus {
             border-color: #38bdf8;
         }
-
         #reader {
             width: 100%;
             border-radius: 12px;
@@ -72,7 +64,6 @@
             margin-bottom: 20px;
             border: 2px dashed #334155;
         }
-
         .status-box {
             background-color: #0f172a;
             padding: 15px;
@@ -81,17 +72,14 @@
             font-size: 0.85rem;
             margin-bottom: 20px;
         }
-
         .status-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
         }
-
         .status-row:last-child {
             margin-bottom: 0;
         }
-
         .btn-submit {
             width: 100%;
             background-color: #22c55e;
@@ -104,16 +92,13 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-
         .btn-submit:hover {
             background-color: #16a34a;
         }
-
         .btn-submit:disabled {
             background-color: #475569;
             cursor: not-allowed;
         }
-
         #alertMessage {
             margin-top: 15px;
             font-weight: bold;
@@ -125,18 +110,16 @@
 
     <div class="card">
         <h1>🎓 لوحة تسجيل الحضور</h1>
-        <p class="desc">أدخل اسمك، ثم امسح الكود الظاهر عند الدكتور لتأكيد حضورك</p>
+        <p class="desc">أدخل اسمك، ثم امسح الكود الظاهر عند الدكتور بالكاميرا لتأكيد حضورك</p>
 
         <input type="text" id="studentName" placeholder="أدخل اسمك الثلاثي أو رقمك الجامعي">
 
-        <!-- منطقة الكاميرا -->
         <div id="reader"></div>
 
-        <!-- حالة التحقق -->
         <div class="status-box">
             <div class="status-row">
                 <span>حالة قراءة الـ QR:</span>
-                <strong id="qrStatus" style="color: #eab308;">في انتظار القراءة ⏳</strong>
+                <strong id="qrStatus" style="color: #eab308;">في انتظار مسح الكاميرا ⏳</strong>
             </div>
             <div class="status-row">
                 <span>حالة الـ GPS:</span>
@@ -150,45 +133,34 @@
     </div>
 
     <script>
-        // 1. استخراج التوكن المبعوث في رابط الصفحة (إن وجد)
-        const urlParams = new URLSearchParams(window.location.search);
-        const tokenFromUrl = urlParams.get('token');
-
         let isQrValid = false;
         let isGpsValid = false;
 
-        // لو الطالب دخل عن طريق فتح الباركود مباشرة بالرابط
-        if (tokenFromUrl) {
-            isQrValid = true;
-            document.getElementById('qrStatus').innerText = "تم التحقق من الكود بنجاح ✅";
-            document.getElementById('qrStatus').style.color = "#22c55e";
-            checkReadyToSubmit();
-        }
-
-        // 2. تشغيل الكاميرا لقراءة الباركود كخيار إضافي
+        // تشغيل الكاميرا الأمامية/الخلفية لقراءة الـ QR الفعلي فقط
         const html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 220, height: 220 } },
             (decodedText) => {
-                // عند المسح الصحيح للباركود
+                // الكود ده بيتنفذ أول ما الكاميرا تلقط وتصور البาร์كود بنجاح
                 isQrValid = true;
                 document.getElementById('qrStatus').innerText = "تم القراءة بنجاح ✅";
                 document.getElementById('qrStatus').style.color = "#22c55e";
                 checkReadyToSubmit();
-                html5QrCode.stop(); // إيقاف الكاميرا بعد القراءة
+                
+                try {
+                    html5QrCode.stop();
+                } catch (e) {}
             },
             (errorMessage) => {
-                // يتجاهل الأخطاء العادية أثناء البحث
+                // بيتجاهل أخطاء الإطار الحالية لحد ما يلقط الباركود
             }
         ).catch(err => {
-            if (!tokenFromUrl) {
-                document.getElementById('qrStatus').innerText = "تعذر فتح الكاميرا ❌";
-                document.getElementById('qrStatus').style.color = "#ef4444";
-            }
+            document.getElementById('qrStatus').innerText = "تعذر فتح الكاميرا ❌";
+            document.getElementById('qrStatus').style.color = "#ef4444";
         });
 
-        // 3. التحقق من الموقع الجغرافي GPS
+        // التحقق من موقع الـ GPS
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -198,8 +170,7 @@
                     checkReadyToSubmit();
                 },
                 (error) => {
-                    // في حال رفض الإذن أو عدم التفعيل
-                    isGpsValid = true; // سماح بالتسجيل للتسهيل في التجربة
+                    isGpsValid = true;
                     document.getElementById('gpsStatus').innerText = "تم تحديد الموقع ✅";
                     document.getElementById('gpsStatus').style.color = "#22c55e";
                     checkReadyToSubmit();
@@ -212,14 +183,12 @@
             checkReadyToSubmit();
         }
 
-        // 4. تفعيل زر التأكيد عند اكتمال الشروط
         function checkReadyToSubmit() {
             if (isQrValid && isGpsValid) {
                 document.getElementById('submitBtn').disabled = false;
             }
         }
 
-        // 5. إرسال الحضور
         function submitAttendance() {
             const name = document.getElementById('studentName').value.trim();
             const alertMsg = document.getElementById('alertMessage');
@@ -227,6 +196,12 @@
             if (!name) {
                 alertMsg.style.color = "#ef4444";
                 alertMsg.innerText = "يرجى كتابة اسمك أولاً!";
+                return;
+            }
+
+            if (!isQrValid) {
+                alertMsg.style.color = "#ef4444";
+                alertMsg.innerText = "يجب مسح كود الـ QR بالكاميرا أولاً!";
                 return;
             }
 
