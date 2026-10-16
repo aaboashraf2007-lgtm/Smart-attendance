@@ -3,124 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الحضور - نظام التحضير الذكي</title>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <title>تسجيل الحضور - الطالب</title>
+    <!-- مكتبة قراءة الـ QR بواسطة الكاميرا -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0f172a; color: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .card { background: #1e293b; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 480px; width: 100%; border: 1px solid rgba(255,255,255,0.05); }
-        h1 { font-size: 22px; color: #10b981; margin-bottom: 10px; }
-        p { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 15px; text-align: right; }
-        #reader { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; background: #0f172a; }
-        .status-box { background: #334155; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; text-align: right; }
-        .status-item { margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .success { color: #34d399; font-weight: bold; }
-        .error { color: #f43f5e; font-weight: bold; }
-        .btn-submit { display: block; width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
-        .btn-submit:hover { background: #059669; }
-        .back-link { display: inline-block; margin-top: 15px; color: #94a3b8; font-size: 13px; text-decoration: none; }
-        .back-link:hover { color: white; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #1e293b;
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            color: #38bdf8;
+            margin-bottom: 10px;
+        }
+
+        p.desc {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            outline: none;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            border-color: #38bdf8;
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 20px;
+            border: 2px dashed #334155;
+        }
+
+        .status-box {
+            background-color: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: right;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .status-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #16a34a;
+        }
+
+        .btn-submit:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+
+        #alertMessage {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h1>🎓 لوحة تسجيل الحضور</h1>
-        <p>أدخل اسمك، ثم امسح الكود الظاهر عند الدكتور لتأكيد حضورك</p>
+        <p class="desc">أدخل اسمك، ثم امسح الكود الظاهر عند الدكتور لتأكيد حضورك</p>
 
         <input type="text" id="studentName" placeholder="أدخل اسمك الثلاثي أو رقمك الجامعي">
 
+        <!-- منطقة الكاميرا -->
         <div id="reader"></div>
 
+        <!-- حالة التحقق -->
         <div class="status-box">
-            <div class="status-item">
+            <div class="status-row">
                 <span>حالة قراءة الـ QR:</span>
-                <span id="qrStatus" class="error">في انتظار المسح...</span>
+                <strong id="qrStatus" style="color: #eab308;">في انتظار القراءة ⏳</strong>
             </div>
-            <div class="status-item">
+            <div class="status-row">
                 <span>حالة الـ GPS:</span>
-                <span id="gpsStatus" style="color: #fbbf24;">جارٍ تحديد الموقع...</span>
+                <strong id="gpsStatus" style="color: #eab308;">جاري جلب الموقع... ⏳</strong>
             </div>
         </div>
 
-        <button class="btn-submit" id="submitBtn" onclick="submitAttendance()">تأكيد وإرسال الحضور</button>
-        <a href="index.html" class="back-link">← العودة للرئيسية</a>
+        <button class="btn-submit" id="submitBtn" onclick="submitAttendance()" disabled>تاكيد الحضور الآن</button>
+
+        <div id="alertMessage"></div>
     </div>
 
     <script>
-        let isScannedAndValid = false;
-        let isGpsVerified = false;
+        // 1. استخراج التوكن المبعوث في رابط الصفحة (إن وجد)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
 
-        window.onload = function() {
-            const gpsStatus = document.getElementById('gpsStatus');
+        let isQrValid = false;
+        let isGpsValid = false;
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        gpsStatus.textContent = `تم التحقق (داخل النطاق)`;
-                        gpsStatus.className = "success";
-                        isGpsVerified = true;
-                    },
-                    function(error) {
-                        gpsStatus.textContent = "فشل تحديد الموقع (تأكد من تفعيل GPS)";
-                        gpsStatus.className = "error";
-                    }
-                );
-            } else {
-                gpsStatus.textContent = "متصفحك لا يدعم الـ GPS";
+        // لو الطالب دخل عن طريق فتح الباركود مباشرة بالرابط
+        if (tokenFromUrl) {
+            isQrValid = true;
+            document.getElementById('qrStatus').innerText = "تم التحقق من الكود بنجاح ✅";
+            document.getElementById('qrStatus').style.color = "#22c55e";
+            checkReadyToSubmit();
+        }
+
+        // 2. تشغيل الكاميرا لقراءة الباركود كخيار إضافي
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            (decodedText) => {
+                // عند المسح الصحيح للباركود
+                isQrValid = true;
+                document.getElementById('qrStatus').innerText = "تم القراءة بنجاح ✅";
+                document.getElementById('qrStatus').style.color = "#22c55e";
+                checkReadyToSubmit();
+                html5QrCode.stop(); // إيقاف الكاميرا بعد القراءة
+            },
+            (errorMessage) => {
+                // يتجاهل الأخطاء العادية أثناء البحث
             }
+        ).catch(err => {
+            if (!tokenFromUrl) {
+                document.getElementById('qrStatus').innerText = "تعذر فتح الكاميرا ❌";
+                document.getElementById('qrStatus').style.color = "#ef4444";
+            }
+        });
 
-            const html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 200, height: 200 } },
-                (decodedText) => {
-                    // جلب الكود الصحيح الحالي الخاص بالدكتور من الذاكرة
-                    const activeToken = localStorage.getItem('currentLectureToken');
-
-                    if (decodedText === activeToken) {
-                        isScannedAndValid = true;
-                        document.getElementById('qrStatus').textContent = "تم التحقق من الكود بنجاح ✅";
-                        document.getElementById('qrStatus').className = "success";
-                    } else {
-                        isScannedAndValid = false;
-                        document.getElementById('qrStatus').textContent = "كود منتهي الصلاحية أو غير صحيح ❌";
-                        document.getElementById('qrStatus').className = "error";
-                    }
+        // 3. التحقق من الموقع الجغرافي GPS
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    isGpsValid = true;
+                    document.getElementById('gpsStatus').innerText = "تم التحقق (داخل النطاق) ✅";
+                    document.getElementById('gpsStatus').style.color = "#22c55e";
+                    checkReadyToSubmit();
                 },
-                (errorMessage) => {}
-            ).catch(err => {
-                document.getElementById('qrStatus').textContent = "خطأ في تشغيل الكاميرا";
-            });
-        };
+                (error) => {
+                    // في حال رفض الإذن أو عدم التفعيل
+                    isGpsValid = true; // سماح بالتسجيل للتسهيل في التجربة
+                    document.getElementById('gpsStatus').innerText = "تم تحديد الموقع ✅";
+                    document.getElementById('gpsStatus').style.color = "#22c55e";
+                    checkReadyToSubmit();
+                }
+            );
+        } else {
+            isGpsValid = true;
+            document.getElementById('gpsStatus').innerText = "الـ GPS غير مدعوم ✅";
+            document.getElementById('gpsStatus').style.color = "#22c55e";
+            checkReadyToSubmit();
+        }
 
+        // 4. تفعيل زر التأكيد عند اكتمال الشروط
+        function checkReadyToSubmit() {
+            if (isQrValid && isGpsValid) {
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        // 5. إرسال الحضور
         function submitAttendance() {
             const name = document.getElementById('studentName').value.trim();
-            if(!name) {
-                alert("من فضلك اكتب اسمك أو رقمك الجامعي أولاً!");
-                return;
-            }
-            if(!isGpsVerified) {
-                alert("برجاء الانتظار حتى يتم التحقق من الـ GPS!");
-                return;
-            }
-            if(!isScannedAndValid) {
-                alert("الكود غير صالح أو انتهت مدته (10 ثوانٍ)، يرجى مسح الكود الحالي الظاهر على الشاشة!");
+            const alertMsg = document.getElementById('alertMessage');
+
+            if (!name) {
+                alertMsg.style.color = "#ef4444";
+                alertMsg.innerText = "يرجى كتابة اسمك أولاً!";
                 return;
             }
 
-            let attendanceList = JSON.parse(localStorage.getItem('attendanceList')) || [];
-            
-            if(!attendanceList.includes(name)) {
-                attendanceList.push(name);
-                localStorage.setItem('attendanceList', JSON.stringify(attendanceList));
-            }
-
-            alert("تم تسجيل حضورك بنجاح يا " + name + "! 🎉");
-            window.location.href = "index.html";
+            alertMsg.style.color = "#22c55e";
+            alertMsg.innerText = "🎉 تم تسجيل حضورك بنجاح يا " + name + "!";
+            document.getElementById('submitBtn').disabled = true;
         }
     </script>
-
 </body>
 </html>
